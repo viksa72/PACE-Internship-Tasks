@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ lesson.title }} — {{ course.title }} — LearnHub{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row">
+  <!-- Sidebar -->
+  <div class="lesson-sidebar flex-shrink-0" id="lessonSidebar">
+    <div class="p-3 border-bottom border-secondary d-flex align-items-center justify-content-between d-md-none">
+      <h6 class="mb-0 fw-bold">Course Content</h6>
+      <button class="btn btn-sm btn-outline-light" onclick="document.getElementById('lessonSidebar').classList.toggle('d-none');">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    
+    <div class="p-3 border-bottom border-secondary" style="background:rgba(255,255,255,0.02);">
+      <h6 class="fw-bold mb-1"><a href="{% url 'courses:course_detail' slug=course.slug %}" class="text-white text-decoration-none">{{ course.title }}</a></h6>
+      <div class="progress mt-2 mb-1" style="height:4px;">
+        <div class="progress-bar" style="width:{{ course.progress|default:'0' }}%"></div>
+      </div>
+      <div class="d-flex justify-content-between small text-muted">
+        <span>Your Progress</span>
+        <span>{{ course.progress|default:'0' }}%</span>
+      </div>
+    </div>
+
+    <div class="accordion accordion-flush lh-accordion-dark" id="courseCurriculum">
+      {% for t in topics %}
+      <div class="accordion-item bg-transparent border-0 border-bottom border-secondary">
+        <h2 class="accordion-header">
+          <button class="accordion-button bg-transparent text-white shadow-none py-3 {% if t.id != lesson.topic.id %}collapsed{% endif %}" 
+                  type="button" data-bs-toggle="collapse" data-bs-target="#topic-collapse-{{ t.id }}">
+            <div class="d-flex flex-column w-100 pe-3">
+              <span class="small text-muted mb-1">Section {{ forloop.counter }}</span>
+              <span class="fw-semibold" style="font-size:0.9rem;">{{ t.title }}</span>
+            </div>
+          </button>
+        </h2>
+        <div id="topic-collapse-{{ t.id }}" class="accordion-collapse collapse {% if t.id == lesson.topic.id %}show{% endif %}">
+          <div class="accordion-body p-0 pb-2">
+            <div class="list-group list-group-flush bg-transparent">
+              {% for l in t.lessons.all %}
+              <a href="{% url 'courses:lesson_view' course_slug=course.slug lesson_id=l.id %}" 
+                 class="list-group-item list-group-item-action border-0 py-2 px-4 d-flex gap-3 align-items-start
+                        {% if l.id == lesson.id %}active bg-primary bg-opacity-25 border-start border-primary border-4{% else %}bg-transparent text-light hover-bg-light{% endif %}">
+                <i class="bi {% if l.id == lesson.id %}bi-play-circle-fill text-primary{% else %}bi-play-circle text-muted{% endif %} mt-1"></i>
+                <div>
+                  <div style="font-size:0.85rem;" class="{% if l.id == lesson.id %}fw-bold text-white{% endif %}">{{ l.title }}</div>
+                  <div class="small text-muted"><i class="bi bi-clock me-1"></i>{{ l.duration_minutes }} min</div>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex-grow-1 p-0 p-md-4 p-lg-5 overflow-hidden">
+    <div class="d-flex align-items-center mb-3 d-md-none p-3 pb-0">
+      <button class="btn btn-outline-light btn-sm" onclick="document.getElementById('lessonSidebar').classList.toggle('d-none');">
+        <i class="bi bi-list me-1"></i>Course Content
+      </button>
+    </div>
+
+    <div class="px-3 px-md-0 mx-auto" style="max-width:900px;">
+      <!-- Video Player (if URL exists) -->
+      {% if lesson.video_url %}
+      <div class="ratio ratio-16x9 mb-4 rounded-3 overflow-hidden shadow-lg border border-secondary">
+        <iframe src="{{ lesson.video_url }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+      {% endif %}
+
+      <!-- Lesson Title & Meta -->
+      <div class="mb-4 pb-3 border-bottom border-secondary">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2 text-muted small">
+          <span>Section {{ lesson.topic.order }}: {{ lesson.topic.title }}</span>
+          <i class="bi bi-chevron-right" style="font-size:0.6rem;"></i>
+          <span class="text-primary">{{ lesson.duration_minutes }} min</span>
+        </div>
+        <h1 class="fw-bold mb-3">{{ lesson.title }}</h1>
+      </div>
+
+      <!-- Lesson Content (HTML) -->
+      <div class="lesson-content content-formatted text-light">
+        {{ lesson.content|safe }}
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="d-flex justify-content-between mt-5 pt-4 border-top border-secondary">
+        <!-- Previous Button -->
+        {% with prev_lesson=None %}
+          {% for t in topics %}
+            {% for l in t.lessons.all %}
+              {% if l.id == lesson.id %}
+                {% if prev_lesson %}
+                  <a href="{% url 'courses:lesson_view' course_slug=course.slug lesson_id=prev_lesson.id %}" class="btn btn-outline-light">
+                    <i class="bi bi-arrow-left me-2"></i>Previous
+                  </a>
+                {% else %}
+                  <div></div>
+                {% endif %}
+              {% endif %}
+              {% set prev_lesson = l %}
+            {% endfor %}
+          {% endfor %}
+        {% endwith %}
+
+        <!-- Next Button -->
+        {% with next_lesson=None found_current=False %}
+          {% for t in topics %}
+            {% for l in t.lessons.all %}
+              {% if found_current and not next_lesson %}
+                {% set next_lesson = l %}
+              {% endif %}
+              {% if l.id == lesson.id %}
+                {% set found_current = True %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+          {% if next_lesson %}
+            <a href="{% url 'courses:lesson_view' course_slug=course.slug lesson_id=next_lesson.id %}" class="btn btn-primary px-4">
+              Next Lesson<i class="bi bi-arrow-right ms-2"></i>
+            </a>
+          {% else %}
+            <a href="{% url 'courses:course_detail' slug=course.slug %}" class="btn btn-success px-4">
+              <i class="bi bi-check2-circle me-2"></i>Finish Course
+            </a>
+          {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Scoped styles for lesson view */
+.hover-bg-light:hover { background-color: rgba(255,255,255,0.05) !important; }
+.content-formatted h2, .content-formatted h3 { margin-top: 1.5rem; margin-bottom: 1rem; color: #fff; }
+.content-formatted p { line-height: 1.7; margin-bottom: 1.2rem; color: #cbd5e1; font-size: 1.05rem; }
+.content-formatted ul, .content-formatted ol { margin-bottom: 1.2rem; color: #cbd5e1; }
+.content-formatted li { margin-bottom: 0.5rem; line-height: 1.6; }
+.content-formatted pre { background: #0f172a; padding: 1.2rem; border-radius: 8px; overflow-x: auto; border: 1px solid #334155; }
+.content-formatted code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; color: #38bdf8; }
+.content-formatted blockquote { border-left: 4px solid #8b5cf6; padding-left: 1rem; margin-left: 0; color: #94a3b8; font-style: italic; }
+.content-formatted img { max-width: 100%; height: auto; border-radius: 8px; margin: 1.5rem 0; }
+</style>
+{% endblock %}

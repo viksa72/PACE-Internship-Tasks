@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Verify OTP — LearnHub{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card" style="max-width:420px;">
+    <div class="auth-header">
+      <div class="brand-icon mx-auto mb-3" style="width:60px;height:60px;font-size:1.75rem;background:linear-gradient(135deg,#f59e0b,#ef4444);">
+        <i class="bi bi-envelope-check-fill"></i>
+      </div>
+      <h2>Check Your Email</h2>
+      <p>We sent a 6-digit OTP to<br><strong style="color:#e2e8f0;">{{ email }}</strong></p>
+    </div>
+
+    <form method="post" id="otp-form" novalidate>
+      {% csrf_token %}
+      <div class="mb-4">
+        <label class="form-label text-center d-block">Enter OTP Code</label>
+        {% render_field form.otp class="form-control otp-input text-center" id="otp-field" autofocus="true" inputmode="numeric" %}
+        {% if form.otp.errors %}<div class="text-danger small mt-2 text-center">{{ form.otp.errors.0 }}</div>{% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 py-2" id="verify-btn">
+        <i class="bi bi-check2-circle me-2"></i>Verify OTP
+      </button>
+    </form>
+
+    <div class="text-center mt-4">
+      <p class="small text-muted mb-2">Didn't receive the code?</p>
+      <a href="{% url 'accounts:resend_otp' %}" class="btn btn-outline-primary btn-sm" id="resend-otp-btn">
+        <i class="bi bi-arrow-clockwise me-1"></i>Resend OTP
+      </a>
+    </div>
+
+    <div class="mt-3 p-3 rounded-3" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);">
+      <p class="mb-0 small" style="color:#fbbf24;">
+        <i class="bi bi-clock me-1"></i> OTP expires in <strong>10 minutes</strong>. Check your spam folder if not received.
+      </p>
+    </div>
+
+    <div class="text-center mt-3">
+      <a href="{% url 'accounts:login' %}" class="small text-muted">
+        <i class="bi bi-arrow-left me-1"></i>Back to Login
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

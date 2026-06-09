@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}My Profile — LearnHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="lh-card p-4">
+        <div class="d-flex align-items-center gap-3 mb-4">
+          {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" class="avatar-lg" alt="avatar">
+          {% else %}
+            <div class="avatar-placeholder-lg">{{ user.first_name|first|upper|default:user.username|first|upper }}</div>
+          {% endif %}
+          <div>
+            <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
+            <span class="tag"><i class="bi bi-person me-1"></i>Student</span>
+          </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label">First Name</label>
+              {% render_field form.first_name class="form-control" %}
+            </div>
+            <div class="col-6">
+              <label class="form-label">Last Name</label>
+              {% render_field form.last_name class="form-control" %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Email</label>
+              {% render_field form.email class="form-control" %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Bio</label>
+              {% render_field form.bio class="form-control" %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Profile Picture</label>
+              {% render_field form.avatar class="form-control" %}
+            </div>
+            <div class="col-12 mt-2">
+              <button type="submit" class="btn btn-primary px-4" id="save-profile-btn">
+                <i class="bi bi-check2 me-2"></i>Save Changes
+              </button>
+              <a href="{% url 'courses:my_courses' %}" class="btn btn-outline-primary ms-2">
+                <i class="bi bi-collection-play me-1"></i>My Courses
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

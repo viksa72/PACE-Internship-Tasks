@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Courses — LearnHub{% endblock %}
+{% block meta_description %}Explore hundreds of expert-led courses in programming, design, business, and more on LearnHub.{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="catalog-hero">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <h1 class="display-5 fw-bold mb-2">
+          Explore <span class="gradient-text">Expert Courses</span>
+        </h1>
+        <p class="text-muted fs-5 mb-4">Learn at your own pace from world-class instructors.</p>
+        <!-- Mobile search -->
+        <form class="d-flex d-lg-none mb-2" action="{% url 'courses:catalog' %}" method="GET">
+          <div class="input-group">
+            <input class="form-control" type="search" name="q" placeholder="Search courses..."
+                   value="{{ query }}">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+          </div>
+        </form>
+      </div>
+      <div class="col-lg-5 text-end d-none d-lg-block">
+        <div style="font-size:8rem;opacity:0.07;line-height:1;"><i class="bi bi-mortarboard-fill"></i></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <!-- Sidebar Filters -->
+    <div class="col-lg-3">
+      <div class="filter-card">
+        <p class="filter-heading">Categories</p>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <a href="{% url 'courses:catalog' %}{% if query %}?q={{ query }}{% endif %}"
+             class="filter-pill {% if not selected_category %}active{% endif %}">All</a>
+          {% for cat in categories %}
+          <a href="{% url 'courses:catalog' %}?{% if query %}q={{ query }}&{% endif %}category={{ cat.slug }}"
+             class="filter-pill {% if selected_category == cat.slug %}active{% endif %}">
+            <i class="bi {{ cat.icon }} me-1"></i>{{ cat.name }}
+          </a>
+          {% endfor %}
+        </div>
+
+        <p class="filter-heading">Level</p>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          {% for val, label in level_choices|default:"" %}{% endfor %}
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}"
+             class="filter-pill {% if not selected_level %}active{% endif %}">Any</a>
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}level=beginner"
+             class="filter-pill {% if selected_level == 'beginner' %}active{% endif %}">Beginner</a>
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}level=intermediate"
+             class="filter-pill {% if selected_level == 'intermediate' %}active{% endif %}">Intermediate</a>
+          <a href="?{% if query %}q={{ query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}level=advanced"
+             class="filter-pill {% if selected_level == 'advanced' %}active{% endif %}">Advanced</a>
+        </div>
+
+        <p class="filter-heading">Sort By</p>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="?{% if query %}q={{ query }}&{% endif %}sort=-created_at"
+             class="filter-pill {% if selected_sort == '-created_at' or not selected_sort %}active{% endif %}">Newest</a>
+          <a href="?{% if query %}q={{ query }}&{% endif %}sort=price_asc"
+             class="filter-pill {% if selected_sort == 'price_asc' %}active{% endif %}">Price ↑</a>
+          <a href="?{% if query %}q={{ query }}&{% endif %}sort=price_desc"
+             class="filter-pill {% if selected_sort == 'price_desc' %}active{% endif %}">Price ↓</a>
+          <a href="?{% if query %}q={{ query }}&{% endif %}sort=title"
+             class="filter-pill {% if selected_sort == 'title' %}active{% endif %}">A–Z</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Course Grid -->
+    <div class="col-lg-9">
+      {% if query %}
+      <p class="text-muted mb-3">
+        <i class="bi bi-search me-1"></i>
+        Showing results for <strong>"{{ query }}"</strong> —
+        <a href="{% url 'courses:catalog' %}" class="text-muted">clear</a>
+      </p>
+      {% endif %}
+
+      {% if courses %}
+      <div class="row g-4" id="courses-grid">
+        {% for course in courses %}
+        <div class="col-md-6 col-xl-4">
+          <div class="course-card">
+            <!-- Thumbnail -->
+            <a href="{% url 'courses:course_detail' slug=course.slug %}">
+              {% if course.thumbnail %}
+                <img src="{{ course.thumbnail.url }}" class="course-thumbnail" alt="{{ course.title }}">
+              {% else %}
+                <div class="course-thumbnail-placeholder">
+                  <i class="bi bi-play-circle-fill"></i>
+                </div>
+              {% endif %}
+            </a>
+
+            <!-- Body -->
+            <div class="course-card-body">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                {% if course.category %}
+                <span class="tag" style="font-size:0.65rem;">
+                  <i class="bi {{ course.category.icon }}"></i>{{ course.category.name }}
+                </span>
+                {% endif %}
+                <span class="badge-level badge-{{ course.level }}">{{ course.get_level_display }}</span>
+              </div>
+              <h3 class="course-card-title">
+                <a href="{% url 'courses:course_detail' slug=course.slug %}" class="text-decoration-none" style="color:inherit;">
+                  {{ course.title }}
+                </a>
+              </h3>
+              <p class="course-card-instructor">
+                <i class="bi bi-person-circle me-1"></i>{{ course.teacher.get_full_name|default:course.teacher.username }}
+              </p>
+              <div class="mt-auto pt-2 d-flex align-items-center justify-content-between">
+                <div class="small text-muted">
+                  <i class="bi bi-book me-1"></i>{{ course.lesson_count }} lessons
+                </div>
+                <span class="course-card-price">${{ course.price }}</span>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="course-card-footer">
+              <div class="small text-muted">
+                <i class="bi bi-people me-1"></i>{{ course.enrollment_count }} enrolled
+              </div>
+              {% if course.id in enrolled_ids %}
+                <a href="{% url 'courses:course_detail' slug=course.slug %}" class="btn btn-success btn-sm px-3">
+                  <i class="bi bi-play-fill me-1"></i>Continue
+                </a>
+              {% else %}
+                <a href="{% url 'courses:course_detail' slug=course.slug %}" class="btn btn-primary btn-sm px-3">
+                  View Course
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-search"></i></div>
+        <h5>No courses found</h5>
+        <p>Try different keywords or browse all categories.</p>
+        <a href="{% url 'courses:catalog' %}" class="btn btn-outline-primary">Clear Filters</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

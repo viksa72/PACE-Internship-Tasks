@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete — LearnHub{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  <div class="lh-card mx-auto p-5" style="max-width: 500px; border-color: var(--danger);">
+    <div class="text-danger mb-4" style="font-size: 4rem;">
+      <i class="bi bi-exclamation-triangle"></i>
+    </div>
+    <h2 class="mb-3">Delete Topic?</h2>
+    <p class="text-muted mb-4">
+      Are you sure you want to delete the topic <strong>"{{ topic.title }}"</strong>? 
+      This will also delete all lessons within this topic.
+    </p>
+    
+    <form method="post">
+      {% csrf_token %}
+      <div class="d-flex gap-3 justify-content-center">
+        <a href="{% url 'courses:course_manage' slug=course.slug %}" class="btn btn-outline-light px-4">Cancel</a>
+        <button type="submit" class="btn btn-danger px-4">
+          <i class="bi bi-trash me-2"></i>Yes, Delete Topic
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

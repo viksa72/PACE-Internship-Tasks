@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Successful — LearnHub{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  <div class="lh-card mx-auto p-5" style="max-width: 600px;">
+    <div class="mb-4" style="font-size: 5rem; color: var(--success);">
+      <i class="bi bi-check-circle-fill"></i>
+    </div>
+    <h1 class="fw-bold mb-3">Payment Successful!</h1>
+    <p class="text-muted mb-4 fs-5">
+      Thank you for your purchase. You are now officially enrolled in 
+      <strong class="text-white">"{{ enrollment.course.title }}"</strong>.
+    </p>
+    
+    <div class="p-4 rounded-3 mb-4 text-start bg-card2 border border-secondary">
+      <h6 class="text-muted mb-3 fw-bold text-uppercase" style="font-size:0.8rem;letter-spacing:1px;">Order Summary</h6>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-light">Course</span>
+        <span class="fw-semibold">{{ enrollment.course.title }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-light">Instructor</span>
+        <span>{{ enrollment.course.teacher.get_full_name|default:enrollment.course.teacher.username }}</span>
+      </div>
+      <div class="d-flex justify-content-between border-top border-secondary mt-3 pt-3">
+        <span class="text-light fw-bold">Total Paid</span>
+        <span class="fw-bold text-success">${{ enrollment.course.price }}</span>
+      </div>
+    </div>
+
+    <div class="d-flex gap-3 justify-content-center">
+      <a href="{% url 'courses:my_courses' %}" class="btn btn-outline-primary px-4 py-2">Go to My Courses</a>
+      <a href="{% url 'courses:course_detail' slug=enrollment.course.slug %}" class="btn btn-primary px-4 py-2">Start Learning Now</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications — LearnHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 fw-bold">Notifications</h2>
+        {% if notifications %}
+        <form action="{% url 'notifications:mark_all_read' %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+            <i class="bi bi-check2-all me-1"></i>Mark all as read
+          </button>
+        </form>
+        {% endif %}
+      </div>
+
+      {% if notifications %}
+      <div class="lh-card p-0 overflow-hidden">
+        <div class="list-group list-group-flush bg-transparent">
+          {% for notif in notifications %}
+          <div class="list-group-item bg-transparent border-secondary py-3 px-4 hover-bg-light transition-all
+                      {% if not notif.is_read %}border-start border-primary border-4 bg-primary bg-opacity-10{% endif %}">
+            <div class="d-flex gap-3 align-items-start">
+              <!-- Icon based on type -->
+              <div class="rounded-circle d-flex align-items-center justify-content-center mt-1 shrink-0" 
+                   style="width:40px;height:40px;
+                          {% if notif.notification_type == 'new_lesson' %}background:rgba(6,182,212,0.15);color:var(--accent);
+                          {% elif notif.notification_type == 'new_course' %}background:rgba(16,185,129,0.15);color:var(--success);
+                          {% elif notif.notification_type == 'payment' %}background:rgba(245,158,11,0.15);color:var(--warning);
+                          {% else %}background:rgba(124,58,237,0.15);color:var(--primary-light);{% endif %}">
+                {% if notif.notification_type == 'new_lesson' %}
+                  <i class="bi bi-play-circle fs-5"></i>
+                {% elif notif.notification_type == 'new_course' %}
+                  <i class="bi bi-stars fs-5"></i>
+                {% elif notif.notification_type == 'payment' %}
+                  <i class="bi bi-credit-card fs-5"></i>
+                {% else %}
+                  <i class="bi bi-bell fs-5"></i>
+                {% endif %}
+              </div>
+              
+              <!-- Content -->
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <h6 class="mb-0 fw-bold text-light">{{ notif.title }}</h6>
+                  <small class="text-muted text-nowrap ms-2" style="font-size:0.75rem;">{{ notif.created_at|timesince }} ago</small>
+                </div>
+                <p class="mb-2 text-muted small" style="line-height:1.5;white-space:pre-wrap;">{{ notif.message }}</p>
+                
+                {% if notif.link %}
+                <a href="{% url 'notifications:mark_read' pk=notif.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 mt-1" style="font-size:0.75rem;">
+                  View Details <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state py-5 mt-3">
+        <div class="empty-icon text-muted mb-3"><i class="bi bi-bell-slash fs-1"></i></div>
+        <h5>You're all caught up!</h5>
+        <p class="text-muted">You have no notifications right now.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+.hover-bg-light:hover { background-color: rgba(255,255,255,0.03) !important; }
+.transition-all { transition: all 0.2s ease; }
+.shrink-0 { flex-shrink: 0; }
+</style>
+{% endblock %}
