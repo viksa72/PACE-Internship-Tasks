@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Cancelled — LearnHub{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  <div class="lh-card mx-auto p-5" style="max-width: 500px;">
+    <div class="text-warning mb-4" style="font-size: 5rem;">
+      <i class="bi bi-x-circle"></i>
+    </div>
+    <h2 class="mb-3">Payment Cancelled</h2>
+    <p class="text-muted mb-4 fs-5">
+      Your payment process was cancelled or failed. Your account has not been charged.
+    </p>
+    
+    <div class="d-flex gap-3 justify-content-center">
+      <a href="{% url 'courses:catalog' %}" class="btn btn-outline-light px-4">Browse Catalog</a>
+      {% if course %}
+      <a href="{% url 'courses:course_detail' slug=course.slug %}" class="btn btn-primary px-4">Return to Course</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

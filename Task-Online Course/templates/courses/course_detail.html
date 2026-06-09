@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title }} — LearnHub{% endblock %}
+{% block meta_description %}{{ course.short_description|default:course.description|truncatewords:30 }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row g-4">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'courses:catalog' %}" class="text-muted">Courses</a></li>
+          {% if course.category %}
+          <li class="breadcrumb-item text-muted">{{ course.category.name }}</li>
+          {% endif %}
+          <li class="breadcrumb-item active" style="color:var(--primary-light);">{{ course.title|truncatechars:40 }}</li>
+        </ol>
+      </nav>
+
+      <!-- Course Header -->
+      <div class="mb-4">
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+          {% if course.category %}
+          <span class="tag"><i class="bi {{ course.category.icon }} me-1"></i>{{ course.category.name }}</span>
+          {% endif %}
+          <span class="badge-level badge-{{ course.level }}">{{ course.get_level_display }}</span>
+        </div>
+        <h1 class="fw-bold mb-3" style="font-size:2rem;line-height:1.2;">{{ course.title }}</h1>
+        <p class="fs-5 text-muted">{{ course.short_description }}</p>
+
+        <div class="d-flex flex-wrap gap-4 mt-3 text-muted small">
+          <span><i class="bi bi-person-circle me-1 text-primary"></i>
+            {{ course.teacher.get_full_name|default:course.teacher.username }}</span>
+          <span><i class="bi bi-book me-1 text-primary"></i>{{ course.lesson_count }} lessons</span>
+          <span><i class="bi bi-collection me-1 text-primary"></i>{{ course.topic_count }} topics</span>
+          <span><i class="bi bi-people me-1 text-primary"></i>{{ course.enrollment_count }} students</span>
+          <span><i class="bi bi-calendar me-1 text-primary"></i>{{ course.created_at|date:"M Y" }}</span>
+        </div>
+      </div>
+
+      <!-- Thumbnail -->
+      {% if course.thumbnail %}
+      <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}"
+           class="img-fluid rounded-3 mb-4 w-100" style="max-height:360px;object-fit:cover;">
+      {% endif %}
+
+      <!-- Description -->
+      <div class="lh-card p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>About This Course</h5>
+        <div style="color:#cbd5e1;line-height:1.8;">{{ course.description|linebreaks }}</div>
+      </div>
+
+      <!-- Curriculum -->
+      <div class="lh-card p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-list-ul me-2 text-primary"></i>Course Curriculum</h5>
+        {% if topics %}
+        <div class="accordion lh-accordion" id="curriculum">
+          {% for topic in topics %}
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                      type="button" data-bs-toggle="collapse"
+                      data-bs-target="#topic-{{ topic.id }}">
+                <i class="bi bi-folder2 me-2"></i>{{ topic.title }}
+                <span class="ms-auto badge bg-dark text-muted me-2">{{ topic.lessons.count }} lessons</span>
+              </button>
+            </h2>
+            <div id="topic-{{ topic.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}">
+              <div class="accordion-body p-0">
+                {% for lesson in topic.lessons.all %}
+                <div class="d-flex align-items-center justify-content-between px-3 py-2"
+                     style="border-bottom:1px solid var(--border);">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-play-circle text-primary"></i>
+                    {% if is_enrolled %}
+                    <a href="{% url 'courses:lesson_view' course_slug=course.slug lesson_id=lesson.id %}"
+                       class="text-decoration-none" style="color:#cbd5e1;">{{ lesson.title }}</a>
+                    {% else %}
+                    <span style="color:#94a3b8;">{{ lesson.title }}</span>
+                    {% endif %}
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    {% if lesson.duration_minutes %}
+                    <span class="small text-muted">{{ lesson.duration_minutes }} min</span>
+                    {% endif %}
+                    {% if not is_enrolled %}<i class="bi bi-lock-fill text-muted small"></i>{% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted"><i class="bi bi-hourglass me-2"></i>Course content coming soon.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Sidebar CTA -->
+    <div class="col-lg-4">
+      <div class="lh-card p-4" style="position:sticky;top:90px;">
+        {% if course.thumbnail %}
+        <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}"
+             class="img-fluid rounded-3 mb-3 w-100" style="height:160px;object-fit:cover;">
+        {% endif %}
+
+        <div class="text-center mb-3">
+          <div style="font-size:2.5rem;font-weight:900;color:var(--primary-light);">
+            ${{ course.price }}
+          </div>
+        </div>
+
+        {% if user.is_authenticated %}
+          {% if is_enrolled %}
+          <div class="text-center mb-3">
+            <span class="badge bg-success px-3 py-2 fs-6 mb-2">
+              <i class="bi bi-check-circle me-1"></i>Enrolled
+            </span>
+          </div>
+          {% if topics %}
+          <a href="{% url 'courses:lesson_view' course_slug=course.slug lesson_id=topics.0.lessons.first.id %}"
+             class="btn btn-success w-100 py-2 mb-2" id="continue-learning-btn">
+            <i class="bi bi-play-circle me-2"></i>Continue Learning
+          </a>
+          {% endif %}
+          {% elif user.is_student %}
+          <a href="{% url 'payments:create' course_id=course.id %}"
+             class="btn btn-primary w-100 py-2 mb-2" id="enroll-btn">
+            <i class="bi bi-bag-check me-2"></i>Enroll Now — ${{ course.price }}
+          </a>
+          <div class="text-center small text-muted mb-2">
+            <i class="bi bi-paypal me-1 text-primary"></i>Secure payment via PayPal
+          </div>
+          {% elif user.is_teacher %}
+          <p class="text-center text-muted small">Teachers cannot purchase courses.</p>
+          {% endif %}
+        {% else %}
+        <a href="{% url 'accounts:login' %}" class="btn btn-primary w-100 py-2 mb-2" id="login-to-enroll-btn">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Log In to Enroll
+        </a>
+        <a href="{% url 'accounts:student_signup' %}" class="btn btn-outline-primary w-100" id="signup-to-enroll-btn">
+          <i class="bi bi-person-plus me-2"></i>Create Free Account
+        </a>
+        {% endif %}
+
+        <hr style="border-color:var(--border);">
+        <ul class="list-unstyled small text-muted mb-0">
+          <li class="mb-2"><i class="bi bi-infinity me-2 text-primary"></i>Full lifetime access</li>
+          <li class="mb-2"><i class="bi bi-phone me-2 text-primary"></i>Access on any device</li>
+          <li class="mb-2"><i class="bi bi-award me-2 text-primary"></i>Certificate of completion</li>
+          <li><i class="bi bi-shield-check me-2 text-primary"></i>30-day satisfaction guarantee</li>
+        </ul>
+      </div>
+
+      <!-- Instructor Card -->
+      <div class="lh-card p-4 mt-3">
+        <h6 class="fw-bold mb-3"><i class="bi bi-person-workspace me-2 text-primary"></i>Your Instructor</h6>
+        <div class="d-flex align-items-center gap-3">
+          {% if course.teacher.teacher_profile.avatar %}
+            <img src="{{ course.teacher.teacher_profile.avatar.url }}" class="avatar-lg" alt="instructor">
+          {% else %}
+            <div class="avatar-placeholder-lg" style="width:56px;height:56px;font-size:1.4rem;background:linear-gradient(135deg,#059669,#06b6d4);">
+              {{ course.teacher.first_name|first|upper|default:course.teacher.username|first|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <div class="fw-semibold">{{ course.teacher.get_full_name|default:course.teacher.username }}</div>
+            {% if course.teacher.teacher_profile.expertise %}
+            <div class="small text-muted">{{ course.teacher.teacher_profile.expertise }}</div>
+            {% endif %}
+          </div>
+        </div>
+        {% if course.teacher.teacher_profile.bio %}
+        <p class="small text-muted mt-3 mb-0">{{ course.teacher.teacher_profile.bio|truncatewords:30 }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

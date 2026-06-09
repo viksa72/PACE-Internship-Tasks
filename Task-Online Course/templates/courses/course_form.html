@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ action }} Course — LearnHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="mb-4">
+        <a href="{% url 'courses:teacher_dashboard' %}" class="text-muted small">
+          <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+        <h1 class="mt-2">{{ action }} Course</h1>
+      </div>
+
+      <div class="lh-card p-4">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          <div class="row g-4">
+            <div class="col-12">
+              <label class="form-label">Course Title <span class="text-danger">*</span></label>
+              {% render_field form.title class="form-control" placeholder="e.g. Complete Python Bootcamp 2025" %}
+              {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Category</label>
+              {% render_field form.category class="form-select" %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Level</label>
+              {% render_field form.level class="form-select" %}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Short Description <span class="text-muted small">(shown on cards)</span></label>
+              {% render_field form.short_description class="form-control" placeholder="One-line summary of your course..." %}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Full Description <span class="text-danger">*</span></label>
+              {% render_field form.description class="form-control" %}
+              {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Price (USD) <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text" style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);color:#e2e8f0;">$</span>
+                {% render_field form.price class="form-control" %}
+              </div>
+              {% if form.price.errors %}<div class="text-danger small mt-1">{{ form.price.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Thumbnail Image</label>
+              {% render_field form.thumbnail class="form-control" id="id_thumbnail" %}
+              {% if course and course.thumbnail %}
+              <div class="mt-2">
+                <img src="{{ course.thumbnail.url }}" id="thumbnail-preview"
+                     class="img-fluid rounded-3" style="max-height:100px;" alt="current thumbnail">
+              </div>
+              {% else %}
+              <img id="thumbnail-preview" class="img-fluid rounded-3 mt-2" style="display:none;max-height:100px;" alt="preview">
+              {% endif %}
+            </div>
+
+            <div class="col-12">
+              <div class="form-check form-switch">
+                {% render_field form.is_published class="form-check-input" id="id_is_published" %}
+                <label class="form-check-label fw-semibold" for="id_is_published">
+                  Publish this course (make it visible to students)
+                </label>
+              </div>
+            </div>
+
+            <div class="col-12 d-flex gap-3 mt-2">
+              <button type="submit" class="btn btn-primary px-4" id="save-course-btn">
+                <i class="bi bi-check2 me-2"></i>{{ action }} Course
+              </button>
+              <a href="{% url 'courses:teacher_dashboard' %}" class="btn btn-outline-light">Cancel</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
