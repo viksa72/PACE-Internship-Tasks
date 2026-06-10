@@ -21,6 +21,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Third-party
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'drf_spectacular',
     'crispy_forms',
     'crispy_bootstrap5',
     'widget_tweaks',
@@ -29,6 +32,7 @@ INSTALLED_APPS = [
     'apps.courses',
     'apps.payments',
     'apps.notifications',
+    'apps.api',
 ]
 
 MIDDLEWARE = [
@@ -116,3 +120,32 @@ PAYPAL_MODE = os.getenv('PAYPAL_MODE', 'sandbox')
 
 # OTP settings
 OTP_EXPIRY_MINUTES = 10
+
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 12,
+}
+
+# Simple JWT
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+
+# drf-spectacular (Swagger docs)
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'LearnHub API',
+    'DESCRIPTION': 'REST API for the LearnHub Online Learning Platform',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
