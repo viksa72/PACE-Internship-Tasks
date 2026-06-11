@@ -1,0 +1,499 @@
+{% extends 'resumes/base.html' %}
+{% load static %}
+
+{% block title %}{{ employee.name }} | Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-layout {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    /* Sidebar info */
+    .profile-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .info-list {
+        margin-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .info-item {
+        display: flex;
+        gap: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .info-item i {
+        color: var(--primary);
+        width: 1.25rem;
+        margin-top: 0.2rem;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--dark);
+    }
+
+    .sidebar-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .sidebar-actions .btn {
+        width: 100%;
+    }
+
+    /* Mappings list */
+    .mappings-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-top: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .mapping-item {
+        background-color: var(--gray-100);
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-sm);
+        border-left: 3px solid var(--primary);
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .mapping-info {
+        flex-grow: 1;
+    }
+
+    .mapping-proj-name {
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.15rem;
+    }
+
+    .mapping-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: 0.75rem;
+    }
+
+    /* Live Resume Preview (A4 style) */
+    .preview-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--white);
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--gray-200);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .resume-a4-page {
+        background-color: var(--white);
+        border: 1px solid var(--gray-300);
+        box-shadow: var(--shadow-lg);
+        border-radius: 4px;
+        padding: 1.5in 0.75in 1.2in 0.75in; /* mimicking margins */
+        min-height: 11in; /* mimicking standard A4/Letter height ratios */
+        width: 100%;
+        max-width: 8.5in;
+        margin: 0 auto;
+        position: relative;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #000;
+        font-size: 13.5px;
+        line-height: 1.45;
+    }
+
+    /* Header on preview sheet */
+    .sheet-header {
+        position: absolute;
+        top: 0.5in;
+        left: 0.75in;
+        right: 0.75in;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #1e40af;
+    }
+
+    .sheet-logo-container img {
+        height: 25px;
+        display: block;
+    }
+
+    .sheet-logo-fallback {
+        font-weight: 800;
+        font-size: 18px;
+        color: #1e40af;
+    }
+
+    .sheet-company-name {
+        font-weight: 700;
+        font-size: 13.5px;
+        color: #1e40af;
+    }
+
+
+    /* Footer on preview sheet */
+    .sheet-footer {
+        position: absolute;
+        bottom: 0.5in;
+        left: 0.75in;
+        right: 0.75in;
+        border-top: 1px solid #ccc;
+        padding-top: 8px;
+        text-align: center;
+        font-size: 11px;
+        color: #666;
+    }
+
+    /* Contents formatting matching sample PDF */
+    .sheet-title-meta {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .sheet-section-heading {
+        font-size: 15.5px;
+        font-weight: 700;
+        margin-top: 18px;
+        margin-bottom: 10px;
+        color: #000;
+    }
+
+    .sheet-bullet-list {
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 12px;
+    }
+
+    .sheet-bullet-item {
+        position: relative;
+        padding-left: 18px;
+        margin-bottom: 6px;
+    }
+
+    .sheet-bullet-item::before {
+        content: "•";
+        position: absolute;
+        left: 5px;
+        top: 0;
+    }
+
+    /* Skills Table formatting */
+    .sheet-skills-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+    }
+
+    .sheet-skills-table td {
+        vertical-align: top;
+        padding: 3px 0;
+    }
+
+    .sheet-skills-bullet {
+        width: 15px;
+        text-align: left;
+    }
+
+    .sheet-skills-cat {
+        width: 220px;
+        font-weight: 700;
+    }
+
+    .sheet-skills-colon {
+        width: 15px;
+        text-align: center;
+    }
+
+
+    /* Projects formatting */
+    .sheet-project-item {
+        margin-bottom: 15px;
+    }
+
+    .sheet-project-title {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 6px;
+        margin-top: 10px;
+    }
+
+    .sheet-project-meta {
+        margin-bottom: 4px;
+        padding-left: 18px;
+        position: relative;
+        font-weight: 500;
+    }
+
+    .sheet-project-meta::before {
+        content: "•";
+        position: absolute;
+        left: 5px;
+        top: 0;
+    }
+
+    .sheet-project-desc {
+        margin-bottom: 8px;
+        padding-left: 18px;
+    }
+
+    .sheet-project-roles-heading {
+        font-weight: 700;
+        padding-left: 18px;
+        margin-bottom: 4px;
+    }
+
+    .sheet-project-role-bullet {
+        padding-left: 36px;
+        position: relative;
+        margin-bottom: 4px;
+    }
+
+    .sheet-project-role-bullet::before {
+        content: "•";
+        position: absolute;
+        left: 23px;
+        top: 0;
+    }
+
+    .sheet-project-separator {
+        border: none;
+        border-top: 1px solid #ccc;
+        margin: 12px 0;
+    }
+
+    @media (max-width: 992px) {
+        .profile-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" id="detail-header">
+    <div>
+        <h1 class="page-title">{{ employee.name }}</h1>
+        <p class="page-subtitle">Designation: {{ employee.designation }} | ID: {{ employee.employee_id }}</p>
+    </div>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary" id="btn-back-dashboard"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+</div>
+
+<div class="profile-layout" id="profile-layout-container">
+    
+    <!-- Sidebar -->
+    <div class="profile-sidebar" id="profile-sidebar">
+        <!-- Personal info card -->
+        <div class="shadow-card">
+            <h3 class="page-title" style="font-size: 1.1rem; border-bottom: 1px solid var(--gray-200); padding-bottom: 0.5rem;"><i class="fa-solid fa-address-card"></i> Personal Details</h3>
+            <div class="info-list">
+                <div class="info-item">
+                    <i class="fa-solid fa-envelope"></i>
+                    <div>
+                        <div class="info-label">Email</div>
+                        <div>{{ employee.email }}</div>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fa-solid fa-phone"></i>
+                    <div>
+                        <div class="info-label">Phone</div>
+                        <div>{{ employee.phone }}</div>
+                    </div>
+                </div>
+                {% if employee.address %}
+                <div class="info-item">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <div>
+                        <div class="info-label">Address</div>
+                        <div>{{ employee.address }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Mappings card -->
+        <div class="shadow-card" id="project-mappings-card">
+            <div class="mappings-title">
+                <span><i class="fa-solid fa-folder-tree"></i> Project Mappings</span>
+                <a href="{% url 'add_mapping' employee_pk=employee.pk %}" class="btn btn-primary btn-sm" style="padding: 0.25rem 0.5rem;" id="btn-map-project"><i class="fa-solid fa-plus"></i> Map</a>
+            </div>
+            <div style="margin-top: 1rem;">
+                {% if mappings %}
+                    {% for m in mappings %}
+                        <div class="mapping-item" id="mapping-item-{{ m.id }}">
+                            <div class="mapping-info">
+                                <div class="mapping-proj-name">{{ m.project.name }}</div>
+                                <div style="color: var(--gray-500); font-size: 0.75rem;">
+                                    Role: {% if m.role_and_responsibilities %}{{ m.role_and_responsibilities.splitlines.0 }}{% else %}No Role{% endif %}
+                                </div>
+                                <div style="color: var(--gray-500); font-size: 0.7rem;">Order: {{ m.order }}</div>
+                            </div>
+                            <div class="mapping-actions">
+                                <a href="{% url 'edit_mapping' pk=m.pk %}" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.35rem;" title="Edit details for this project"><i class="fa-solid fa-pencil"></i></a>
+                                <form action="{% url 'delete_mapping' pk=m.pk %}" method="POST" style="display: inline;" onsubmit="return confirm('Remove project assignment?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm" style="padding: 0.2rem 0.35rem;" title="Unmap project"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="font-size: 0.85rem; color: var(--gray-500); text-align: center; padding: 1rem 0;">No projects linked to this employee.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="sidebar-actions">
+            <a href="{% url 'edit_employee' pk=employee.pk %}" class="btn btn-secondary" id="btn-edit-profile"><i class="fa-solid fa-user-pen"></i> Edit Profile</a>
+            <form action="{% url 'delete_employee' pk=employee.pk %}" method="POST" onsubmit="return confirm('Permanently delete this employee?');" id="delete-employee-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-can"></i> Delete Employee</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resume Live Preview -->
+    <div class="preview-container" id="resume-preview-container">
+        <div class="preview-header">
+            <div style="font-weight: 700; color: var(--dark); font-size: 1.05rem;"><i class="fa-solid fa-magnifying-glass-chart"></i> Resume Live Preview</div>
+            <a href="{% url 'generate_resume_pdf' pk=employee.pk %}" class="btn btn-primary" id="btn-generate-resume"><i class="fa-solid fa-download"></i> Generate & Download Resume</a>
+        </div>
+
+        <!-- Simulated A4 Paper sheet -->
+        <div class="resume-a4-page" id="resume-a4-page">
+            
+            <!-- Static Header -->
+            <div class="sheet-header">
+                <div class="sheet-logo-container">
+                    <img src="{% static 'resumes/images/logo.png' %}" alt="Pace Wisdom Logo" onerror="this.style.display='none'; document.getElementById('logo-text-fallback').style.display='block';">
+                    <span id="logo-text-fallback" class="sheet-logo-fallback" style="display: none;">pacewisdom</span>
+                </div>
+                <div class="sheet-company-name">PACE WISDOM SOLUTIONS PVT. LTD.</div>
+            </div>
+
+            <!-- Header Content -->
+            <div class="sheet-title-meta">
+                <div>Name: {{ employee.name }}</div>
+                <div>Designation: {{ employee.designation }}</div>
+            </div>
+
+            <!-- Summary -->
+            <div class="sheet-section-heading">Professional Summary:</div>
+            <ul class="sheet-bullet-list">
+                {% for line in employee.professional_summary.splitlines %}
+                    {% if line.strip %}
+                        <li class="sheet-bullet-item">{{ line.strip }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+
+            <!-- Skills -->
+            {% if employee.technical_skills %}
+            <div class="sheet-section-heading">Technical Skill Set</div>
+            <table class="sheet-skills-table">
+                <tbody>
+                    {% for cat, skills in employee.technical_skills.items %}
+                    <tr>
+                        <td class="sheet-skills-bullet">•</td>
+                        <td class="sheet-skills-cat">{{ cat }}</td>
+                        <td class="sheet-skills-colon">:</td>
+                        <td class="sheet-skills-list">
+                            {% if skills|length > 0 %}
+                                {% for skill in skills %}{{ skill }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                            {% else %}
+                                {{ skills }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+            <!-- Projects -->
+            {% if mappings %}
+            <div class="sheet-section-heading">Professional Projects</div>
+                {% for m in mappings %}
+                <div class="sheet-project-item">
+                    <div class="sheet-project-title">Project {{ forloop.counter }}: {{ m.project.name }}</div>
+                    <div class="sheet-project-meta">
+                        <b>Technology used:</b> {{ m.project.technologies_used }}.
+                    </div>
+                    <div class="sheet-project-desc">
+                        <b>Description:</b> {{ m.project.description }}
+                    </div>
+                    <div class="sheet-project-roles-heading">Role and Responsibilities:</div>
+                    {% for resp in m.role_and_responsibilities.splitlines %}
+                        {% if resp.strip %}
+                        <div class="sheet-project-role-bullet">{{ resp.strip }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% if not forloop.last %}
+                    <hr class="sheet-project-separator">
+                {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <!-- Education -->
+            {% if employee.education %}
+            <div class="sheet-section-heading" style="margin-top: 25px;">Education</div>
+            <ul class="sheet-bullet-list">
+                {% for edu in employee.education %}
+                <li class="sheet-bullet-item">
+                    <b>{{ edu.degree }}</b> - {{ edu.institution }} {% if edu.year %}({{ edu.year }}){% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <!-- Certifications -->
+            {% if employee.certifications %}
+            <div class="sheet-section-heading" style="margin-top: 20px;">Certifications</div>
+            <ul class="sheet-bullet-list">
+                {% for cert in employee.certifications %}
+                <li class="sheet-bullet-item">
+                    <b>{{ cert.name }}</b> - {{ cert.issuer }} {% if cert.year %}({{ cert.year }}){% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <!-- Static Footer -->
+            <div class="sheet-footer">
+                Page 1
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

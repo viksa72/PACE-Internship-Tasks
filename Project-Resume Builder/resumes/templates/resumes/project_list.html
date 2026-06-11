@@ -1,0 +1,161 @@
+{% extends 'resumes/base.html' %}
+
+{% block title %}Projects Database | Resume Builder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .project-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .project-card {
+        background-color: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: var(--transition);
+        min-height: 250px;
+    }
+
+    .project-card:hover {
+        border-color: var(--secondary);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .proj-meta-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+
+    .proj-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--dark);
+    }
+
+    .proj-client-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        background-color: #f0fdf4;
+        color: #166534;
+        padding: 0.2rem 0.5rem;
+        border-radius: var(--radius-sm);
+        border: 1px solid #bbf7d0;
+    }
+
+    .proj-duration {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .proj-desc {
+        font-size: 0.85rem;
+        color: var(--gray-700);
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.5;
+    }
+
+    .tech-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .tech-tag {
+        font-size: 0.72rem;
+        font-weight: 500;
+        background-color: var(--primary-light);
+        color: var(--primary);
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+    }
+
+    .proj-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: auto;
+        border-top: 1px solid var(--gray-100);
+        padding-top: 0.75rem;
+    }
+
+    .proj-actions .btn {
+        flex: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" id="proj-list-header">
+    <div>
+        <h1 class="page-title">Master Projects Database</h1>
+        <p class="page-subtitle">Add and edit core projects. Linked assignments can inherit these details.</p>
+    </div>
+    <a href="{% url 'add_project' %}" class="btn btn-primary" id="btn-add-project"><i class="fa-solid fa-plus"></i> Add Master Project</a>
+</div>
+
+{% if projects %}
+    <div class="project-grid" id="project-grid-container">
+        {% for proj in projects %}
+            <div class="project-card" id="project-card-{{ proj.id }}">
+                <div>
+                    <div class="proj-meta-header">
+                        <h3 class="proj-name">{{ proj.name }}</h3>
+                        {% if proj.client %}
+                            <span class="proj-client-badge">Client: {{ proj.client }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if proj.duration %}
+                        <div class="proj-duration">
+                            <i class="fa-regular fa-clock"></i>
+                            <span>{{ proj.duration }}</span>
+                        </div>
+                    {% endif %}
+
+                    <p class="proj-desc">{{ proj.description }}</p>
+                    
+                    <div class="tech-tags">
+                        {% for tech in proj.technologies_used.split %}
+                            <!-- Clean up commas if any -->
+                            <span class="tech-tag">{{ tech|cut:','|cut:'.' }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="proj-actions">
+                    <a href="{% url 'edit_project' pk=proj.pk %}" class="btn btn-secondary" id="btn-edit-proj-{{ proj.id }}"><i class="fa-solid fa-pencil"></i> Edit</a>
+                    <form action="{% url 'delete_project' pk=proj.pk %}" method="POST" style="flex:1;" onsubmit="return confirm('Delete this project? This will delete all employee mappings linked to it.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" style="width: 100%;" id="btn-delete-proj-{{ proj.id }}"><i class="fa-solid fa-trash"></i> Delete</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <i class="fa-solid fa-sheet-plastic"></i>
+        <h3 class="empty-state-title">No Projects Found</h3>
+        <p class="empty-state-desc">The project database is currently empty. Get started by adding a master project.</p>
+        <a href="{% url 'add_project' %}" class="btn btn-primary">Add Your First Project</a>
+    </div>
+{% endif %}
+{% endblock %}

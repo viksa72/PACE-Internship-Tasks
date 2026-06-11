@@ -1,0 +1,459 @@
+{% extends 'resumes/base.html' %}
+
+{% block title %}Dashboard | Pace Wisdom Resume Builder{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-light), #f0f9ff);
+        padding: 3rem 2rem;
+
+        border-radius: var(--radius-lg);
+        margin-bottom: 2.5rem;
+        border: 1px solid var(--gray-200);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-content {
+        max-width: 650px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-title {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: var(--primary);
+        line-height: 1.2;
+        margin-bottom: 0.75rem;
+    }
+
+    .hero-desc {
+        color: var(--gray-700);
+        font-size: 1.05rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Search Container */
+    .search-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .search-box-container {
+        display: flex;
+        background-color: var(--white);
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: 0.25rem;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+    }
+
+    .search-box-container:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px var(--primary-light);
+    }
+
+    .search-input {
+        flex-grow: 1;
+        border: none;
+        outline: none;
+        padding: 0.6rem 1rem;
+        font-size: 0.95rem;
+        font-family: inherit;
+        color: var(--dark);
+    }
+
+    .search-btn {
+        background-color: var(--primary);
+        color: var(--white);
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-weight: 600;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .search-btn:hover {
+        background-color: var(--primary-hover);
+    }
+
+    /* Autocomplete suggestions */
+    .suggestions-box {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        margin-top: 0.5rem;
+        box-shadow: var(--shadow-lg);
+        z-index: 10;
+        max-height: 250px;
+        overflow-y: auto;
+        display: none;
+    }
+
+    .suggestion-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--gray-100);
+        transition: var(--transition);
+    }
+
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+        background-color: var(--primary-light);
+    }
+
+    .suggestion-name {
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 0.9rem;
+    }
+
+    .suggestion-desc {
+        color: var(--gray-500);
+        font-size: 0.8rem;
+    }
+
+    /* Stats Section */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+        background-color: var(--white);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--gray-200);
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .icon-emp {
+        background-color: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .icon-proj {
+        background-color: #e0f2fe;
+        color: #0369a1;
+    }
+
+    .icon-map {
+        background-color: #fef3c7;
+        color: #b45309;
+    }
+
+    .stat-num {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--dark);
+        line-height: 1.1;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--gray-500);
+    }
+
+    /* Employee Grid Section */
+    .employee-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .employee-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .employee-card {
+        background-color: var(--white);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--gray-200);
+        box-shadow: var(--shadow-sm);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 220px;
+        transition: var(--transition);
+    }
+
+    .employee-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary);
+    }
+
+    .emp-meta {
+        margin-bottom: 1rem;
+    }
+
+    .emp-id-badge {
+        display: inline-block;
+        background-color: var(--gray-100);
+        color: var(--gray-700);
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.2rem 0.5rem;
+        border-radius: var(--radius-sm);
+        margin-bottom: 0.5rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .emp-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .emp-designation {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--primary);
+        margin-bottom: 0.75rem;
+    }
+
+    .emp-summary-preview {
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: auto;
+    }
+
+    .card-actions .btn {
+        flex: 1;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: var(--white);
+        border-radius: var(--radius-md);
+        border: 1px dashed var(--gray-300);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--gray-300);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state-desc {
+        color: var(--gray-500);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title" id="dashboard-heading">Automatic Resume Builder</h1>
+        <p class="hero-desc">Dynamically generate professionally formatted PDF resumes matching the corporate standard. Manage employee details, technical skills, and client projects in one central hub.</p>
+        
+        <!-- Interactive Search -->
+        <div class="search-wrapper">
+            <form action="{% url 'dashboard' %}" method="GET" id="search-form">
+                <div class="search-box-container">
+                    <input type="text" name="q" value="{{ query }}" class="search-input" id="employee-search" placeholder="Search employees by Name or ID..." autocomplete="off">
+                    {% if query %}
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm flex-center" style="margin-right: 0.5rem; border: none; background: transparent;"><i class="fa-solid fa-xmark"></i></a>
+                    {% endif %}
+                    <button type="submit" class="search-btn" id="search-submit-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Search</span>
+                    </button>
+                </div>
+            </form>
+            <div class="suggestions-box" id="suggestions-box">
+                <!-- AJAX search results load here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Counter -->
+<div class="stats-grid">
+    <div class="stat-card" id="stat-employees">
+        <div class="stat-icon icon-emp"><i class="fa-solid fa-user-tie"></i></div>
+        <div>
+            <div class="stat-num">{{ total_employees }}</div>
+            <div class="stat-label">Employees Registered</div>
+        </div>
+    </div>
+    <div class="stat-card" id="stat-projects">
+        <div class="stat-icon icon-proj"><i class="fa-solid fa-folder-open"></i></div>
+        <div>
+            <div class="stat-num">{{ total_projects }}</div>
+            <div class="stat-label">Projects In Database</div>
+        </div>
+    </div>
+    <div class="stat-card" id="stat-mappings">
+        <div class="stat-icon icon-map"><i class="fa-solid fa-network-wired"></i></div>
+        <div>
+            <div class="stat-num">{{ total_mappings }}</div>
+            <div class="stat-label">Employee Assignments</div>
+        </div>
+    </div>
+</div>
+
+<!-- Employees Section -->
+<div class="employee-section-header">
+    <h2 class="page-title" style="font-size: 1.4rem;">
+        {% if query %}
+            Search Results for "{{ query }}"
+        {% else %}
+            All Employees
+        {% endif %}
+    </h2>
+    <a href="{% url 'add_employee' %}" class="btn btn-primary btn-sm" id="btn-add-employee"><i class="fa-solid fa-user-plus"></i> Register Employee</a>
+</div>
+
+{% if employees %}
+    <div class="employee-grid" id="employee-cards-grid">
+        {% for emp in employees %}
+            <div class="employee-card" id="emp-card-{{ emp.id }}">
+                <div class="emp-meta">
+                    <span class="emp-id-badge">ID: {{ emp.employee_id }}</span>
+                    <h3 class="emp-name">{{ emp.name }}</h3>
+                    <div class="emp-designation">{{ emp.designation }}</div>
+                    <p class="emp-summary-preview">{{ emp.professional_summary }}</p>
+                </div>
+                <div class="card-actions">
+                    <a href="{% url 'employee_detail' pk=emp.pk %}" class="btn btn-secondary" id="btn-view-{{ emp.id }}"><i class="fa-solid fa-eye"></i> View Profile</a>
+                    <a href="{% url 'generate_resume_pdf' pk=emp.pk %}" class="btn btn-primary" id="btn-pdf-{{ emp.id }}"><i class="fa-solid fa-file-pdf"></i> Generate PDF</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state" id="empty-state-container">
+        <i class="fa-solid fa-users-slash"></i>
+        <h3 class="empty-state-title">No Employees Found</h3>
+        <p class="empty-state-desc">We couldn't find any employees matching your search or in the system database.</p>
+        {% if query %}
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">Clear Search Filter</a>
+        {% else %}
+            <a href="{% url 'add_employee' %}" class="btn btn-primary">Add Your First Employee</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('employee-search');
+        const suggestionsBox = document.getElementById('suggestions-box');
+        
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            if (val.length < 1) {
+                suggestionsBox.innerHTML = '';
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            // Perform AJAX search
+            fetch(`/search-ajax/?q=${encodeURIComponent(val)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const results = data.results;
+                    if (results.length > 0) {
+                        suggestionsBox.innerHTML = '';
+                        results.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.innerHTML = `
+                                <div>
+                                    <span class="suggestion-name">${item.name}</span>
+                                    <span class="suggestion-desc">(${item.employee_id})</span>
+                                </div>
+                                <span class="suggestion-desc">${item.designation}</span>
+                            `;
+                            div.addEventListener('click', function() {
+                                // Redirect directly to employee detail page
+                                window.location.href = `/employee/${item.id}/`;
+                            });
+                            suggestionsBox.appendChild(div);
+                        });
+                        suggestionsBox.style.display = 'block';
+                    } else {
+                        suggestionsBox.innerHTML = '<div style="padding: 0.75rem 1rem; color: var(--gray-500); font-size: 0.85rem;">No matches found</div>';
+                        suggestionsBox.style.display = 'block';
+                    }
+                })
+                .catch(err => console.error('Error fetching search results:', err));
+        });
+
+        // Hide suggestions on document click
+        document.addEventListener('click', function(e) {
+            if (e.target !== searchInput && e.target !== suggestionsBox) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}
