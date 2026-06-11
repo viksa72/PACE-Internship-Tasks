@@ -1,10 +1,10 @@
-# 📄 Resume Builder
+#  Resume Builder
 
 A Django web application that enables HR teams and managers to manage employee profiles, projects, and generate professional PDF resumes with a single click.
 
 ---
 
-## ✨ Features
+##  Features
 
 - **Employee Management** — Create, view, edit, and delete employee profiles (personal info, skills, education, certifications)
 - **Project Management** — Maintain a central library of company projects with client and technology details
@@ -15,7 +15,7 @@ A Django web application that enables HR teams and managers to manage employee p
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer      | Technology                  |
 |------------|-----------------------------|
@@ -26,7 +26,7 @@ A Django web application that enables HR teams and managers to manage employee p
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 Project-Resume Builder/
@@ -57,7 +57,7 @@ Project-Resume Builder/
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -116,7 +116,7 @@ Open your browser and navigate to **http://127.0.0.1:8000/**
 
 ---
 
-## 📋 Data Models
+##  Data Models
 
 ### `Employee`
 | Field                | Type        | Description                              |
@@ -153,7 +153,7 @@ Open your browser and navigate to **http://127.0.0.1:8000/**
 
 ---
 
-## 🧪 Running Tests
+##  Running Tests
 
 ```bash
 python manage.py test resumes
@@ -161,7 +161,7 @@ python manage.py test resumes
 
 ---
 
-## ⚙️ Configuration
+##  Configuration
 
 Key settings are in [`resume_builder/settings.py`](resume_builder/settings.py):
 
